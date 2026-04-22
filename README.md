@@ -159,8 +159,7 @@ Déclenche un **Job Databricks existant** (Serverless), qui exécute les noteboo
 
 ##  1. Définir le Job ID Databricks
 
-docker compose exec airflow-webserver \
-airflow variables set AUTO_INSURANCE_DATABRICKS_JOB_ID <JOB_ID_NUMERIQUE>
+- `docker compose exec airflow-webserverairflow variables set AUTO_INSURANCE_DATABRICKS_JOB_ID <JOB_ID_NUMERIQUE>`
 
 Le Job ID se trouve dans Databricks :  
 **Workflows → Jobs → Job → URL `/jobs/<ID>`**
@@ -171,22 +170,20 @@ Le Job ID se trouve dans Databricks :
 
 Exemple : exécuter tous les jours à **20h32 (heure de Paris)**
 
-docker compose exec airflow-webserver \
-airflow variables set AUTO_INSURANCE_DAG_SCHEDULE "32 20 * * *"
+- `docker compose exec airflow-webserver airflow variables set AUTO_INSURANCE_DAG_SCHEDULE "32 20 * * *"`
 
 ---
 
 ##  3. Définir le fuseau horaire
 
-docker compose exec airflow-webserver \
-airflow variables set AUTO_INSURANCE_DAG_TIMEZONE "Europe/Paris"
+- `docker compose exec airflow-webserver airflow variables set AUTO_INSURANCE_DAG_TIMEZONE "Europe/Paris"`
 
 ---
 
 ##  4. Vérifier les variables
-docker compose exec airflow-webserver airflow variables get AUTO_INSURANCE_DAG_SCHEDULE
-docker compose exec airflow-webserver airflow variables get AUTO_INSURANCE_DAG_TIMEZONE
-docker compose exec airflow-webserver airflow variables get AUTO_INSURANCE_DATABRICKS_JOB_ID
+- `docker compose exec airflow-webserver airflow variables get AUTO_INSURANCE_DAG_SCHEDULE`
+- `docker compose exec airflow-webserver airflow variables get AUTO_INSURANCE_DAG_TIMEZONE`
+- `docker compose exec airflow-webserver airflow variables get AUTO_INSURANCE_DATABRICKS_JOB_ID`
 
 ---
 
@@ -199,20 +196,18 @@ Airflow nécessite deux clés internes :
 **AIRFLOW__WEBSERVER__SECRET_KEY** : sécurisation des sessions web
 
 Ces clés doivent être définies dans les variables d’environnement et placées dans un fichier `.env` (non versionné) :
- - AIRFLOW__CORE__FERNET_KEY=...
- - AIRFLOW__WEBSERVER__SECRET_KEY=...
-Puis référencées dans docker-compose.yml :
-env_file:
-  - .env
+ - `AIRFLOW__CORE__FERNET_KEY=...`
+ - `AIRFLOW__WEBSERVER__SECRET_KEY=...`
+Puis référencées dans docker-compose.yml par `env_file:  - .env`
 
 NB: Ne jamais publier ces clés dans un dépôt public.
 
 ## 1. Pour générer une clé Fernet :
-Dans Ubuntu ou sur Linux : python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+Dans Ubuntu ou sur Linux : `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`
 
 ## 2. Pour générer une clé secrète (à ajouter cette clé stable dans tous les services Airflow), vous avez deux options : 
-  - Soit vous générez un clé unique via un terminal Linux  :  python3 -c "import secrets; print(secrets.token_urlsafe(32))"
-  - Soit vous générez une clé aléatoir via un terminal Linux  : openssl rand -hex 32
+  - Soit vous générez une clé unique via un terminal Linux  : ` python3 -c "import secrets; print(secrets.token_urlsafe(32))"`
+  - Soit vous générez une clé aléatoir via un terminal Linux  : `openssl rand -hex 32`
 
 ## Connexion Databricks (obligatoire)
 
