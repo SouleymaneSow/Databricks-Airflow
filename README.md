@@ -12,7 +12,8 @@ Ce projet met en œuvre un pipeline Data Engineering complet, industrialisé et 
 - **Databricks Serverless** (Unity Catalog, Volumes, Delta Lake)  
 - **Apache Airflow** (DAG dynamique, FileSensor, déclenchement de Job Databricks)  
 - **Architecture Data Lakehouse** Bronze → Silver → Gold  
-- **Configuration dynamique via Variables Airflow (sans modifier le code)**  
+- **Configuration dynamique via Variables Airflow (sans modifier le code)** 
+- **Observabilité et Gestion proactive des erreurs** 
 
 Il illustre une architecture professionnelle utilisée dans les équipes Data Engineering modernes.
 
@@ -28,6 +29,7 @@ Ce projet démontre une maîtrise complète de :
 - Orchestration de pipelines distribués
 - Gestion d’environnements Dockerisés
 - Bonnes pratiques d’industrialisation
+- Monitoring, Observabilité et Gestion proactive des erreurs
 
 Il constitue une base solide pour un pipeline de production dans un environnement Data Engineering moderne.
 
@@ -75,6 +77,51 @@ databricks-airflow-auto-insurance-pipeline/
 Note :  
 Les dossiers **raw_data**, **bronze_auto**, **silver_auto** et **gold_auto** sont créés automatiquement dans Unity Catalog Volumes sur Databricks.
 Ils n’existent pas dans le répertoire local et ne doivent pas être versionnés.
+
+---
+
+# Démarrer le projet (Airflow + Databricks)
+
+1. Lancer Airflow (Docker) depuis la racine du projet :
+ - `docker compose up -d`
+
+2. Initialiser Airflow (à faire une seule fois):
+ - `docker compose up airflow-init`
+
+3. Accéder à Airflow
+ - URL : http://localhost:8080
+ - Identifiants : définis dans airflow-init (ex : admin / admin)
+
+## Programmer l’exécution du pipeline (CRON)
+
+Le DAG utilise une configuration dynamique via les Variables Airflow.
+
+**Option A** — Modifier l’horaire via Airflow Variables (recommandé)
+
+Changer l’heure d’exécution sans toucher au code :
+ - `docker compose exec airflow-webserver airflow variables set AUTO_INSURANCE_DAG_SCHEDULE "40 20 * * *"`
+
+Exemples :
+ - Tous les jours à 20h40 → "40 20 * * *"
+ - Tous les jours à 18h10 → "10 18 * * *"
+
+**Option B** — Modifier l’horaire via .env (possible mais moins flexible)
+
+changer dans .env:  
+  - `AUTO_INSURANCE_DAG_SCHEDULE="40 20 * * *"`
+
+Puis redémarrer Airflow :  
+ - `docker compose down`
+
+ - `docker compose up -d`
+
+NB: La meilleure pratique estd' utiliser Airflow Variables (**Option A**) car :
+
+  - On aura pas besoin de redémarrer Airflow
+  - On aura pas besoin de modifier `.env`
+  - On aura pas besoin de toucher au code
+  - Airflow garde un historique des changements
+  - c’est modifiable directement dans l’UI Airflow
 
 ---
 
@@ -159,7 +206,7 @@ Déclenche un **Job Databricks existant** (Serverless), qui exécute les noteboo
 
 ##  1. Définir le Job ID Databricks
 
-- `docker compose exec airflow-webserverairflow variables set AUTO_INSURANCE_DATABRICKS_JOB_ID <JOB_ID_NUMERIQUE>`
+- `docker compose exec airflow-webserver airflow variables set AUTO_INSURANCE_DATABRICKS_JOB_ID <JOB_ID_NUMERIQUE>`
 
 Le Job ID se trouve dans Databricks :  
 **Workflows → Jobs → Job → URL `/jobs/<ID>`**
@@ -227,9 +274,29 @@ Au démarrage `airflow-init`, la connexion `databricks_default` est créée auto
 
 Vérification :
 
-docker compose exec airflow-webserver airflow connections get databricks_default
+- `docker compose exec airflow-webserver airflow connections get databricks_default`
 
 Le champ `host` ne doit pas être `localhost`.
+
+---
+
+# 📬 Alertes Email Databricks (Monitoring)
+
+Les alertes email sont configurées directement dans le Job Databricks (Settings → Notifications).
+
+Le Job Databricks est configuré avec des alertes email automatiques :
+  - Email en cas de succès
+  - Email en cas d’échec
+
+Chaque notification contient :
+  - Le Job ID
+  - Le Run ID
+  - Le Workspace
+  - Le statut
+  - Le timestamp
+  - La durée d’exécution
+
+Cela permet un monitoring complet du pipeline et une réactivité immédiate en cas d’incident.
 
 ---
 
@@ -264,8 +331,6 @@ Le champ `host` ne doit pas être `localhost`.
 ---
 
 #  Améliorations possibles
-
-- Ajout d’alertes Slack / Email
 - Monitoring SLA Airflow
 - Tests unitaires PySpark
 - CI/CD GitHub Actions
