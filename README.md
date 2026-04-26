@@ -4,7 +4,6 @@
 
 # 📌 Sommaire
 - [Objectif du projet](#-objectif-du-projet)
-- [Pourquoi ce projet ?](#pourquoi-ce-projet-)
 - [Structure du projet](#-structure-du-projet)
 - [Démarrer le projet](#démarrer-le-projet-airflow--databricks)
 - [Schéma d’architecture](#schéma-darchitecture)
@@ -37,7 +36,9 @@ Il illustre une architecture professionnelle utilisée dans les équipes Data En
 
 # 🎯 Objectif du projet
 
-Ce projet démontre une maîtrise complète de :
+Ce projet simule un cas d’assurance pour démontrer **une maîtrise complète d’un pipeline Data Engineering moderne**, en reproduisant fidèlement les pratiques utilisées en entreprise : orchestration, gouvernance, traitement distribué, industrialisation et monitoring.
+
+Il met en avant des compétences clés :
 
 - Databricks (Unity Catalog, Volumes, Delta Lake, Serverless)
 - Airflow (DAG dynamique, FileSensor, API Jobs)
@@ -51,30 +52,10 @@ Il constitue une base solide pour un pipeline de production dans un environnemen
 
 ## Données
 
-Les données proviennent d'un jeu de données d'assurance auto (Kaggle) contenant :
-
-- Informations contrat (NUM_POLICE, dates, ancienneté)
-- Profil assuré (âge, sexe, CSP, lieu de travail, moyen de transport)
-- Véhicule (énergie, âge, marque, Crit'Air)
-- Localisation (région, département, commune)
-- Sinistralité (nombre de sinistres, montants)
+Les données proviennent d'un jeu de données d'assurance auto (Kaggle) couvrant le profil assuré, le véhicule et la sinistralité.
 
 Lien du Dataset Kaggle :  
 [Auto Insurance Dataset](https://www.kaggle.com/datasets/silvain/automobile-insurance/data)
-
----
-
-# Pourquoi ce projet ?
-
- Ce projet simule un cas d'assurance pour démontrer une maîtrise complète d’un pipeline Data Engineering moderne, en réunissant :
-
-- ingestion batch de fichiers CSV
-- transformation multi-couches (Bronze / Silver / Gold)
-- Docker pour la reproductibilité et l’isolation de l’environnement
-- orchestration via Airflow
-- stockage Lakehouse avec Databricks
-
-Ce projet reproduit exactement les pratiques utilisées dans les équipes Data Engineering modernes, en combinant orchestration, gouvernance, traitement distribué et monitoring.
 
 ---
 
@@ -194,7 +175,7 @@ Ce schéma illustre le flux complet du pipeline : **Airflow orchestre**, **Datab
 ```mermaid
 graph TD
 
-    %% Define styles for different component types
+    %% Define styles
     classDef airflow fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
     classDef databricks fill:#fff3e0,stroke:#ff6d00,stroke-width:2px;
     classDef storage fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px,stroke-dasharray: 5 5;
@@ -202,32 +183,32 @@ graph TD
     %% Airflow Section
     subgraph Airflow ["Orchestration (Apache Airflow)"]
         direction LR
-        A[FileSensor: Local CSV Check] -->|File Detected| B(DatabricksRunNowOperator: Trigger Job)
+        A["FileSensor: Local CSV Check"] -->|File Detected| B("DatabricksRunNowOperator: Trigger Job")
     end
 
     %% Databricks Section
     subgraph Databricks ["Processing & Transformation (Databricks)"]
         direction TB
-        B -->|API Call| D(Databricks Job)
-        D -->|Runs| NB1[Notebook: 01_bronze_ingestion]
-        D -->|Runs| NB2[Notebook: 02_silver_transformation]
-        D -->|Runs| NB3[Notebook: 03_gold_aggregation]
+        B -->|API Call| D("Databricks Job")
+        D -->|Runs| NB1["Notebook: 01_bronze_ingestion"]
+        D -->|Runs| NB2["Notebook: 02_silver_transformation"]
+        D -->|Runs| NB3["Notebook: 03_gold_aggregation"]
     end
 
     %% Data Lakehouse Storage Section
     subgraph Lakehouse ["Data Lakehouse (Unity Catalog & Volumes)"]
         direction LR
-        V1[Volume: raw_data (CSV)]
-        V2[Volume: bronze_auto (Delta)]
-        V3[Volume: silver_auto (Delta)]
-        V4[Volume: gold_auto (Delta)]
+        V1["Volume: raw_data (CSV)"]
+        V2["Volume: bronze_auto (Delta)"]
+        V3["Volume: silver_auto (Delta)"]
+        V4["Volume: gold_auto (Delta)"]
 
-        V1 -.->|Read CSV| V2
-        V2 -.->|Clean & Type| V3
-        V3 -.->|Aggregate| V4
+        V1 -.->|"Read CSV"| V2
+        V2 -.->|"Clean & Type"| V3
+        V3 -.->|"Aggregate"| V4
     end
 
-    %% Apply styles to main components
+    %% Apply styles
     class Airflow airflow;
     class Databricks databricks;
     class Lakehouse storage;
