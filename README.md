@@ -237,6 +237,7 @@ graph TD
     NB2 -->|Cleanse| V2
     NB3 -->|Transform| V3
 ```
+
 ---
 
 #  Pipeline Databricks (Bronze → Silver → Gold) & Résultats
