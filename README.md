@@ -84,9 +84,10 @@ databricks-airflow-auto-insurance-pipeline/
 ├── docker-compose.yml
 ├── .env.example
 ├── .gitignore
+|── docs/architecture.png
 └── README.md
 ```
-Note :  
+**Note** :  
 Les dossiers **raw_data**, **bronze_auto**, **silver_auto** et **gold_auto** sont créés automatiquement dans Unity Catalog Volumes sur Databricks.
 Ils n’existent pas dans le répertoire local et ne doivent pas être versionnés.
 
@@ -172,52 +173,7 @@ Ils servent de stockage Lakehouse pour les couches Raw → Bronze → Silver →
 
 Ce schéma illustre le flux complet du pipeline : **Airflow orchestre**, **Databricks exécute**, **Unity Catalog stocke**.
 
-```mermaid
-graph TD
-
-    %% Define styles
-    classDef airflow fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
-    classDef databricks fill:#fff3e0,stroke:#ff6d00,stroke-width:2px;
-    classDef storage fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px,stroke-dasharray: 5 5;
-
-    %% Airflow Section
-    subgraph Airflow ["Orchestration (Apache Airflow)"]
-        direction LR
-        A["FileSensor: Local CSV Check"] -->|File Detected| B("DatabricksRunNowOperator: Trigger Job")
-    end
-
-    %% Databricks Section
-    subgraph Databricks ["Processing & Transformation (Databricks)"]
-        direction TB
-        B -->|API Call| D("Databricks Job")
-        D -->|Runs| NB1["Notebook: 01_bronze_ingestion"]
-        D -->|Runs| NB2["Notebook: 02_silver_transformation"]
-        D -->|Runs| NB3["Notebook: 03_gold_aggregation"]
-    end
-
-    %% Data Lakehouse Storage Section
-    subgraph Lakehouse ["Data Lakehouse (Unity Catalog & Volumes)"]
-        direction LR
-        V1["Volume: raw_data (CSV)"]
-        V2["Volume: bronze_auto (Delta)"]
-        V3["Volume: silver_auto (Delta)"]
-        V4["Volume: gold_auto (Delta)"]
-
-        V1 -.->|"Read CSV"| V2
-        V2 -.->|"Clean & Type"| V3
-        V3 -.->|"Aggregate"| V4
-    end
-
-    %% Apply styles
-    class Airflow airflow;
-    class Databricks databricks;
-    class Lakehouse storage;
-
-    %% Connect processing steps to storage
-    NB1 -->|Ingest| V1
-    NB2 -->|Cleanse| V2
-    NB3 -->|Transform| V3
-```
+![Architecture](docs/architecture.png)
 
 ---
 
