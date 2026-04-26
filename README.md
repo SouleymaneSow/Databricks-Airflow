@@ -191,6 +191,7 @@ Ils servent de stockage Lakehouse pour les couches Raw → Bronze → Silver →
 
 Ce schéma illustre le flux complet du pipeline : **Airflow orchestre**, **Databricks exécute**, **Unity Catalog stocke**.
 
+```mermaid
 graph TD
 
     %% Define styles for different component types
@@ -216,13 +217,11 @@ graph TD
     %% Data Lakehouse Storage Section
     subgraph Lakehouse ["Data Lakehouse (Unity Catalog & Volumes)"]
         direction LR
-        %% Defining volumes
         V1[Volume: raw_data (CSV)]
         V2[Volume: bronze_auto (Delta)]
         V3[Volume: silver_auto (Delta)]
         V4[Volume: gold_auto (Delta)]
 
-        %% Connecting volumes to indicate data flow
         V1 -.->|Read CSV| V2
         V2 -.->|Clean & Type| V3
         V3 -.->|Aggregate| V4
@@ -237,7 +236,7 @@ graph TD
     NB1 -->|Ingest| V1
     NB2 -->|Cleanse| V2
     NB3 -->|Transform| V3
-
+```
 ---
 
 #  Pipeline Databricks (Bronze → Silver → Gold) & Résultats
